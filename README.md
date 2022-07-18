@@ -133,7 +133,7 @@ The <a href="https://hub.docker.com/repository/docker/jeffersonlab/clas12softwar
 
 Use this container with the clas12tags:
 
-```jeffersonlab/clas12tags:4.4.1```
+```jeffersonlab/clas12tags:4.4.2```
 
 <hr>
 <br>
@@ -196,14 +196,19 @@ Production:
 	- added passive materials in the central detector region
 	- added HTCC passive materials: windows and cones for default, fall18 and spring18 variations
 	- added HTCC variations and corresponding shifts to gcards
+	- better airgap to fit into htcc and also no interference with target 
 	- added rich sector 4 java variation geometry and entry in gcards (passive materials only)
-	- fmt routine use local coordinates
-	- removed some overlaps
-	- removed target 1mm xy shifts
-	- fix 4.4.2 and 5.0 conform to OPTICALPHOTONPID. notice: this does depend on the geant4 version.
-	- fix to airgap overlap
-	- added band geometry and digitization 
 	- bus cable width fix for BST
+	- fmt routine use local coordinates
+	- added time signal and changed BMT step size to 100 um
+	- added geantino digitization for BMT
+	- FMT mod slim by maxime for rgm
+	- adding step limiter for chargedgeantino
+	- added RG-C configuration
+	- removed target 1mm xy shifts
+	- removing torlon ring adapted from cad target
+	- fix 4.4.2 and 5.0 conform to OPTICALPHOTONPID. notice: this does depend on the geant4 version.
+	- added band geometry and digitization 
 
 	
 
@@ -233,19 +238,44 @@ Also, from now on we go to two numbers only.
 	- Hipo 4 output
 	- Added star "\*" to INTEGRATEDRAW option: -INTEGRATEDRAW="\*" will activate the true info for all sensitive detectors
 	- pcal and ec hitprocesses merged into one: ecal
-	- cnd direct and indirect hits are now two separate hit entries and use the standard hipo identifiers sector layer component
+	- cnd direct and indirect hits are now two separate hit entries and use the standard hipo identifiers sector layer component 
 	- BAND downstream/ upstream  hits are now two separate hit entries and use the standard hipo identifiers sector layer component
 
 
+
 	
-<br>
+<br><br>
 
-<br>
+
+- 5.1:
+	- Binary Field Map Using cMag
+	- Added config bank GECM::config 
+	- Added 45 (deuteron, pdg=1000010020), 46 (triton, pdg=1000010030), 47 (alpha, pdg=1000020040), 49 (He3, pdg=1000020030)
+	- Added raster bank RASTER::adc 
+		- given vx, vy of the first particle: 
+		- component = 1=vx 2=vy
+		- ped = (vx - p0) / p1, where p0, p1 from  /calibration/raster/adc_to_position
+	- Added raster option RASTER_VERTEX:
+	  Randomizes the x, y generated partice vertexes in an ellipse defined by the x, y radii, around their values.
+          If the third argument "reset" is given, the vertexes are centered at zero
+          
+           - example 1: -RASTER_VERTEX="2*cm, 3*cm"
+           - example 2: -RASTER_VERTEX="2*cm, 3*cm, reset" 
+ 
+
+<br><br>
+
+- 5.2:
+	- Upgrade geant4 to 10.7 or 11 :soon:
 		
-- Other TODOs:
+<br><br>
+		
+- Future developments:
 
-	- Rich sector 4 digitization :soon:
-	- Time propagation in DC digitization :soon:
+	- Remove EVIO or use EVIO 6 :soon:
+	- Thresholds implementation :soon:
+	- Fix LTCC box volumes and overlaps :soon:
+	- Passive Material addition / fixes as needed :soon:
 
 <br>
 
@@ -557,16 +587,14 @@ To produce:
 -----------
 
 1. create new tag dir
-2. cp experiments and gcard form old tag to keep track of new changes
-3. make links from ../gcards
-4. change environment.csh to point to the new tag
-5. copy $GEMC to source and clean up. From the tag:
+2. cp experiments and gcard form previous tag
+3. copy $GEMC to source and clean up:
 
 	- cd $GEMC
 	- scons -c
-	- cd -
-	- cp -r $GEMC source ; cd source ; rm -rf .git* ; rm .sconsign.dblite
+	- cd <NEWTAG>
+	- cp -r /opt/projects/gemc/source source ; cd source ; rm -rf .git* ; rm .sconsign.dblite
 	- find ./  -type f  -name .DS_Store  -exec rm -f {} \;
 	- rm -rf api ; cp -r /opt/projects/gemc/api . ; cd api ;  rm -rf .git*
 
-5. change gemc.cc tag to new tag
+4. change gemc.cc tag to new tag. Check PHOTONID if necessary
