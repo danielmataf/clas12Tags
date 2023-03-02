@@ -297,6 +297,7 @@ void PhysicsList::cookPhysics()
 	g4DecayPhys = new G4DecayPhysics("decays");
 
 	// EM Physics
+	// see also https://geant4-userdoc.web.cern.ch/UsersGuides/PhysicsListGuide/html/electromagnetic/index.html
 	if(g4EMPhysics) delete  g4EMPhysics;
 	if(EMPhys == "STD")  g4EMPhysics = new G4EmStandardPhysics();
 	else if(EMPhys == "EMV")  g4EMPhysics = new G4EmStandardPhysics_option1();
@@ -371,6 +372,7 @@ void PhysicsList::cookPhysics()
 	else if(hadronicPhys == "ShieldingLEND")  {g4HadronicPhysics.push_back( new G4HadronPhysicsShieldingLEND(verbosity));}
 //	else if(hadronicPhys == "ShieldingM")     {g4HadronicPhysics.push_back( new G4HadronPhysicsFTFP_BERT(verbosity));}
 	else if(hadronicPhys == "NuBeam")         {g4HadronicPhysics.push_back( new G4HadronPhysicsNuBeam(verbosity));}
+	else if(hadronicPhys == "none")           {;}
 	else {
 		cout << " > " << hadronicPhys << " is not supported in this version of GEMC yet. Exiting." << endl;
 		exit(1);

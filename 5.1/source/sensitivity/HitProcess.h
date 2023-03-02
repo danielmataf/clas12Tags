@@ -71,6 +71,8 @@ public:
 		gpars     = gp;
 		verbosity                = gemcOpt.optMap["HIT_VERBOSITY"].arg;
 		accountForHardwareStatus = gemcOpt.optMap["HARDWARESTATUS"].arg;
+		applyInefficiencies      = gemcOpt.optMap["DETECTOR_INEFFICIENCY"].arg;
+		applyThresholds          = gemcOpt.optMap["APPLY_THRESHOLDS"].arg;
 
 		log_msg   = "  > " + HCname + "  Hit Process ";
 		HCname = name;
@@ -81,7 +83,7 @@ public:
 			filterDummyBanks = true;
 		}
 	}
-	bool writeHit;
+	bool writeHit;           ///< MUST BE INITIALIZED FOR EACH HIT, not each event like above
 	bool filterDummyBanks;   ///< do not write out variables that has no valuable information
 
 
@@ -145,6 +147,8 @@ protected:
 	string log_msg;
 	bool rejectHitConditions;
 	bool accountForHardwareStatus;
+	bool applyInefficiencies;
+	bool applyThresholds;
 
 	inline double DGauss(double x, double *par, double Edep, double stepTime)
 	{

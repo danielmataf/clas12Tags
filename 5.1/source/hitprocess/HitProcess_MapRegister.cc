@@ -6,9 +6,9 @@
 #include "counter_hitprocess.h"      ///< counter hit process common to all
 
 // CLAS12
-//#include "clas12/atof_hitprocess.h"           ///< Alert TOF
-#include "clas12/alert/myatof_hitprocess.h"     ///< Alert TOF
+#include "clas12/alert/atof_hitprocess.h"       ///< Alert TOF
 #include "clas12/alert/ahdc_hitprocess.h"       ///< Alert Drift Chamber
+#include "clas12/alert/alertshell_hitprocess.h" ///< Alert shell non active geometry
 #include "clas12/band_hitprocess.h"		         ///< BAND
 #include "clas12/svt/bst_hitprocess.h"          ///< Barrel Silicon Tracker (bst)
 #include "clas12/cnd_hitprocess.h"              ///< Central Neutron Detector
@@ -25,6 +25,7 @@
 #include "clas12/micromegas/BMT_hitprocess.h"   ///< barrel micromegas
 #include "clas12/rich_hitprocess.h"             ///< Pre-shower calorimeter
 #include "clas12/rtpc_hitprocess.h"             ///< Radial Time Projection Chamber (RTPC)
+#include "clas12/uRwell/uRwell_hitprocess.h"    ///< uRwell detector
 
 // Beam Dump eXperiment
 #include "bdx/cormo_hitprocess.h"               ///< Cormorino detector
@@ -64,28 +65,30 @@ map<string, HitProcess_Factory> HitProcess_Map(string experiments)
 		hitMap["flux"]    = &flux_HitProcess::createHitClass;
 		hitMap["mirror"]  = &mirror_HitProcess::createHitClass;
 		hitMap["counter"] = &counter_HitProcess::createHitClass;
-
+		
 		// CLAS12
 		if(EXP == "clas12") {
-			hitMap["myatof"]   = &myatof_HitProcess::createHitClass;
-			hitMap["ahdc"]     = &ahdc_HitProcess::createHitClass;
-			hitMap["band"]	    = &band_HitProcess::createHitClass;
-			hitMap["bmt"]      = &BMT_HitProcess::createHitClass;
-			hitMap["fmt"]      = &FMT_HitProcess::createHitClass;
-			hitMap["ftm"]      = &ftm_HitProcess::createHitClass;
-			hitMap["bst"]      = &bst_HitProcess::createHitClass;
-			hitMap["cnd"]      = &cnd_HitProcess::createHitClass;
-			hitMap["ctof"]     = &ctof_HitProcess::createHitClass;
-			hitMap["dc"]       = &dc_HitProcess::createHitClass;
-			hitMap["ecal"]     = &ecal_HitProcess::createHitClass;
-			hitMap["ftof"]     = &ftof_HitProcess::createHitClass;
-			hitMap["ft_cal"]   = &ft_cal_HitProcess::createHitClass;
-			hitMap["ft_hodo"]  = &ft_hodo_HitProcess::createHitClass;
-			hitMap["ft_trk"]   = &ftm_HitProcess::createHitClass;
-			hitMap["htcc"]     = &htcc_HitProcess::createHitClass;
-			hitMap["ltcc"]     = &ltcc_HitProcess::createHitClass;
-			hitMap["rich"]     = &rich_HitProcess::createHitClass;
-			hitMap["rtpc"]     = &rtpc_HitProcess::createHitClass;
+			hitMap["alrttof"]   = &atof_HitProcess::createHitClass;
+			hitMap["alrtdc"]    = &ahdc_HitProcess::createHitClass;
+			//hitMap["alertshell"] = &alertshell_HitProcess::createHitClass;
+			hitMap["band"]	     = &band_HitProcess::createHitClass;
+			hitMap["bmt"]       = &BMT_HitProcess::createHitClass;
+			hitMap["fmt"]       = &FMT_HitProcess::createHitClass;
+			hitMap["ftm"]       = &ftm_HitProcess::createHitClass;
+			hitMap["bst"]       = &bst_HitProcess::createHitClass;
+			hitMap["cnd"]       = &cnd_HitProcess::createHitClass;
+			hitMap["ctof"]      = &ctof_HitProcess::createHitClass;
+			hitMap["dc"]        = &dc_HitProcess::createHitClass;
+			hitMap["ecal"]      = &ecal_HitProcess::createHitClass;
+			hitMap["ftof"]      = &ftof_HitProcess::createHitClass;
+			hitMap["ft_cal"]    = &ft_cal_HitProcess::createHitClass;
+			hitMap["ft_hodo"]   = &ft_hodo_HitProcess::createHitClass;
+			hitMap["ft_trk"]    = &ftm_HitProcess::createHitClass;
+			hitMap["htcc"]      = &htcc_HitProcess::createHitClass;
+			hitMap["ltcc"]      = &ltcc_HitProcess::createHitClass;
+			hitMap["rich"]      = &rich_HitProcess::createHitClass;
+			hitMap["rtpc"]      = &rtpc_HitProcess::createHitClass;
+			hitMap["urwell"]    = &uRwell_HitProcess::createHitClass;
 		} else if(EXP == "HPS") {
 			// Aprime
 			hitMap["SVT"]        = &SVT_HitProcess::createHitClass;

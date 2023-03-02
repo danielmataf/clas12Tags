@@ -107,6 +107,37 @@ To use an empty target instead, use the SWITCH_MATERIALTO option.
 <br>
 
 
+
+
+Event Vertex
+------------
+
+While the gcards takes care of the target volumes positions (for example, in rga_spring2019 it is moved upstream by 3cm),
+it is up to the generators and the LUND files to place the event in the correct location.
+
+The <a href="https://github.com/gemc/clas12Tags/tree/master/5.1/config"> surveyed target positions</a> are listed below:<br>
+
+
+ - rga_spring2018</b>: -1.94cm
+ - rga_fall2018</b>:  -3.0cm
+ - rgk_fall2018_FTOn</b>:  -3.0cm
+ - rgk_fall2018_FTOff</b>:  -3.0cm
+ - rgb_spring2019</b>: -3.0cm
+ - rga_spring2019</b>: -3.0cm
+ - rgb_fall2019</b>:   -3.0cm
+
+
+<br>
+<hr>
+<br>
+
+
+
+
+
+
+
+
 Removing a detector or a volume
 -------------------------------
 
@@ -226,8 +257,7 @@ To load production tag 4.4.2:
 <br>
 
 
-In development:
----------------
+<br><br>
 
 
 Numbering scheme changes: hipo4 breaks backward compatibility. So this release is "major".
@@ -246,6 +276,8 @@ Also, from now on we go to two numbers only.
 	
 <br><br>
 
+In development:
+---------------
 
 - 5.1:
 	- Binary Field Map Using cMag
@@ -255,19 +287,82 @@ Also, from now on we go to two numbers only.
 		- given vx, vy of the first particle: 
 		- component = 1=vx 2=vy
 		- ped = (vx - p0) / p1, where p0, p1 from  /calibration/raster/adc_to_position
+	- Removed some problematic LTCC volumes from cad imports (side frame and some nose volumes). This will be revised and added later
+	- Fixed PRINT_EVENT calling g4random
+	- Using new (geant4-standard) MixMaxRng - this also show more accurate seeds status
+	- New EVENT_VERBOSITY flag for dedicated event verbosity
+	- Added nan checks for LUND files numbers
+	- Added nan checks for values to field getters
+	- Added microwell digitization
+	- Added lH2 target variation
+	- Thresholds for CND using values, sigmas from CCDB /calibration/cnd/Thresholds
+	- Thresholds for CTOF, FTOF using values from CCDB /calibration/c[f]tof/threshold
+	- Efficiency for CTOF, FTOF using values from CCDB /calibration/c[f]tof/efficiency
+	- Added gcards in 5.1/config with added suffix _txtField to use the text fields instead of the binary field maps
+	- Removed evio support for clas12tags. gemc main still supports evio 
+	- added flux bank to hipo output
+
+
+- RASTER_VERTEX:
 	- Added raster option RASTER_VERTEX:
 	  Randomizes the x, y generated partice vertexes in an ellipse defined by the x, y radii, around their values.
           If the third argument "reset" is given, the vertexes are centered at zero
-          
+```
            - example 1: -RASTER_VERTEX="2*cm, 3*cm"
+             
+             This randomizes the vertexes around the original LUND values.
+           
            - example 2: -RASTER_VERTEX="2*cm, 3*cm, reset" 
- 
+
+             This randomizes the vertexes around zero.
+```
+- BEAM_SPOT:
+
+	- Randomizes the x, y generated particle vertex shifts in an ellipse defined by the x, y radii and sigmas. An additional parameters defines the ellipse counterclockwise rotation along the z-axis.
+
+By default the shift is relative to the original LUND vertex values.
+If a sixth argument “reset” is given, the vertexes are relative to (VX, VY) = (0, 0)
+
+```
+          - example 1 (preserves LUND original vertices): -BEAM_SPOT="2*cm, 3*cm, 0.2*cm, 0.1*cm, 22*deg"
+             
+             This randomizes the vertexes around the original LUND values, but shifted by (VX, VY) = (2, 3) cm.
+             A gaussian with sigmas (SX, SY) = (0.2, 0.1) cm are used, and the ellipse is rotated 22 degrees around z.
+
+
+           - example 2: -BEAM_SPOT="2*cm, 3*cm, 0.2*cm, 0.1*cm, 22*deg, reset"
+             
+             Same as above except the randomization is directly applied around (VX, VY) = (2, 3)cm.
+```
+
+- RANDOMIZE_LUND_VZ:
+
+	- Added option RANDOMIZE_LUND_VZ:
+	  Randomizes the z vertexes using, in order: Z shift, DZ sigma.
+	  By default the randomization is relative to the LUND vertex values.
+	  If the third argument "reset" is given, the vertexes are relative to VZ=0.
+
+```
+           - example 1 (preserves LUND original vertices):  -RANDOMIZE_LUND_VZ="-3*cm, 2.5*cm"
+             
+             Randomizes the z vertex by plus-minus 2.5cm around the original LUND values, and applies a shift it of -3cm
+
+           - example 2:  -RANDOMIZE_LUND_VZ="-3*cm, 2.5*cm, reset "
+             
+             Randomizes the z vertex by plus-minus 2.5cm around VZ = -3cm
+```
+
 
 <br><br>
 
 - 5.2:
-	- Upgrade geant4 to 10.7 or 11 :soon:
-		
+	- Upgrade geant4 to 10.7.p03 :soon:
+
+
+- 5.3:
+	- Raster w/o beam spot :soon:
+
+
 <br><br>
 		
 - Future developments:

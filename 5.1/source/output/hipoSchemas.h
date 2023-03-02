@@ -5,18 +5,23 @@
 class HipoSchema {
 public:
 	HipoSchema();
-
+	
 	hipo::schema runConfigSchema;
 	hipo::schema runRFSchema;
 	hipo::schema trueInfoSchema;
-
+	
 	// generators
 	hipo::schema geantParticle;
 	hipo::schema mcEventHeader;
 	hipo::schema userLund;
 	hipo::schema lundParticle;
 
+	// flux
+	hipo::schema fluxADCSchema;
+
 	// detectors
+	hipo::schema alertAhdcADCchema;
+	hipo::schema alertAtofADCchema;
 	hipo::schema bandADCSchema;
 	hipo::schema bandTDCSchema;
 	hipo::schema bmtADCSchema;
@@ -47,6 +52,7 @@ public:
 	hipo::schema helADCSchema;
 	hipo::schema helFLIPSchema;
 	hipo::schema helONLINESchema;
+	hipo::schema urwellADCSchema;
 	hipo::schema rasterADCSchema;
 	hipo::schema rawADCSchema;
 	hipo::schema rawTDCSchema;
@@ -54,13 +60,13 @@ public:
 	hipo::schema rawVTPSchema;
 	hipo::schema rawEPICSSchema;
 	hipo::schema emptySchema;
-
+	
 	map<string, hipo::schema> schemasToLoad;
-
+	
 	// type: 0 = adc, 1 = tdc
 	hipo::schema getSchema(string schemaName, int type) ;
-
-
+	
+	
 };
 
 

@@ -188,10 +188,19 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		}
 	}
 
-	double raster_r   = G4UniformRand()*rvdx;
+	double raster_r   = G4UniformRand();
 	double raster_phi = 2.0*pi*G4UniformRand();
-	double rasterx    = raster_r * cos(raster_phi);
-	double rastery    = ( rvdy / rvdx ) * raster_r * sin(raster_phi);
+	double rasterx    = rvdx * raster_r * cos(raster_phi);
+	double rastery    = rvdy * raster_r * sin(raster_phi);
+
+	double beamSpot_phi  = 2.0*pi*G4UniformRand();
+	double beamSpot_ox   = G4RandGauss::shoot(0, bsdx) * cos(beamSpot_phi);
+	double beamSpot_oy   = G4RandGauss::shoot(0, bsdy) * cos(beamSpot_phi);
+	
+	double beamSpot_x   = bssx + beamSpot_ox * cos(bsphi) - beamSpot_oy * sin(bsphi);
+	double beamSpot_y   = bssy + beamSpot_ox * sin(bsphi) + beamSpot_oy * cos(bsphi);
+	
+	double displaceZ = displaceZs + (2.0*G4UniformRand() - 1)*displaceZd;
 
 	// internal generator. Particle defined by command line
 	if(input_gen == "gemc_internal") {
@@ -288,13 +297,16 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 				}
 
 				double PHI = 2.0*pi*G4UniformRand();
-				double Vx = vx/mm + VR*cos(PHI) + rasterx;
-				double Vy = vy/mm + VR*sin(PHI) + rastery;
-				double Vz = vz/mm + (2.0*G4UniformRand()-1.0)*dvz/mm;
+				double Vx = vx/mm + VR*cos(PHI) + rasterx /cm + beamSpot_x /cm;
+				double Vy = vy/mm + VR*sin(PHI) + rastery /cm + beamSpot_y /cm;
+				double Vz = vz/mm + (2.0*G4UniformRand()-1.0)*dvz/mm + displaceZ /cm;
 
-				if ( resetVertex ) {
-					Vx = rasterx;
-					Vy = rastery;
+				if ( resetVertex || resetBeamSpot) {
+					Vx = rasterx /cm + beamSpot_x /cm;
+					Vy = rastery /cm + beamSpot_y /cm;
+				}
+				if ( resetVertex || resetBeamSpot) {
+					Vz = displaceZ / cm;
 				}
 				beam_vrt = G4ThreeVector(Vx, Vy, Vz);
 
@@ -303,18 +315,22 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 				double Vx, Vy, Vz;
 
 				if(gaussOrFlatV == 1) {
-					Vx  = G4RandGauss::shoot(vx/mm, dvx/mm) + rasterx;
-					Vy  = G4RandGauss::shoot(vy/mm, dvy/mm) + rastery;
-					Vz  = G4RandGauss::shoot(vz/mm, dvz/mm);
+					Vx  = G4RandGauss::shoot(vx/mm, dvx/mm) + rasterx /cm  + beamSpot_x /cm ;
+					Vy  = G4RandGauss::shoot(vy/mm, dvy/mm) + rastery /cm  + beamSpot_y /cm ;
+					Vz  = G4RandGauss::shoot(vz/mm, dvz/mm) + displaceZ /cm ;
 				} else {
-					Vx = vx/mm + (2.0*G4UniformRand()-1.0)*dvx/mm  + rasterx;
-					Vy = vy/mm + (2.0*G4UniformRand()-1.0)*dvy/mm  + rastery;
-					Vz = vz/mm + (2.0*G4UniformRand()-1.0)*dvz/mm;
+					Vx = vx/mm + (2.0*G4UniformRand()-1.0)*dvx/mm  + rasterx /cm + beamSpot_x /cm ;
+					Vy = vy/mm + (2.0*G4UniformRand()-1.0)*dvy/mm  + rastery /cm + beamSpot_y /cm ;
+					Vz = vz/mm + (2.0*G4UniformRand()-1.0)*dvz/mm + displaceZ /cm ;
 				}
-				if ( resetVertex ) {
-					Vx = rasterx;
-					Vy = rastery;
+				if ( resetVertex || resetBeamSpot) {
+					Vx = rasterx /cm  + beamSpot_x /cm ;
+					Vy = rastery /cm  + beamSpot_y /cm ;
 				}
+				if ( resetVertex || resetBeamSpot) {
+					Vz = displaceZ /cm ;
+				}
+
 				beam_vrt = G4ThreeVector(Vx, Vy, Vz);
 
 			}
@@ -538,9 +554,33 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 				// vertex is already received in cm from LUND
 				// need to pass it in cm
-				double Vx     = thisParticleInfo.infos[11] + svx/cm + rasterx/cm;
-				double Vy     = thisParticleInfo.infos[12] + svy/cm + rastery/cm;
-				double Vz     = thisParticleInfo.infos[13] + svz/cm ;
+				double Vx     = thisParticleInfo.infos[11] + svx/cm + rasterx/cm + beamSpot_x/cm;
+				double Vy     = thisParticleInfo.infos[12] + svy/cm + rastery/cm + beamSpot_y/cm;
+				double Vz     = thisParticleInfo.infos[13] + svz/cm + displaceZ / cm ;
+				if ( resetVertex || resetBeamSpot) {
+					Vx = rasterx /cm  + beamSpot_x /cm ;
+					Vy = rastery /cm  + beamSpot_y /cm ;
+				}
+				if ( resetVertex || resetBeamSpot) {
+					Vz = displaceZ /cm ;
+				}
+
+				
+				bool isNan = isnan(p) && isnan(pindex) && isnan(type) && isnan(pdef) && isnan(px) && isnan(py) && isnan(pz) && isnan(Vx) && isnan(Vy) && isnan(Vz);
+				
+				if (isNan) {
+					cout << " Error: NAN detected: " << endl;
+					cout << "p: " << isnan(p) << endl;
+					cout << "pindex: " << isnan(pindex) << endl;
+					cout << "type: " << isnan(type) << endl;
+					cout << "pdef: " << isnan(pdef) << endl;
+					cout << "px: " << isnan(px) << endl;
+					cout << "py: " << isnan(py) << endl;
+					cout << "pz: " << isnan(pz) << endl;
+					cout << "Vx: " << isnan(Vx) << endl;
+					cout << "Vy: " << isnan(Vy) << endl;
+					cout << "Vz: " << isnan(Vz) << endl;
+				}
 				
 				if(PROPAGATE_DVERTEXTIME == 0) {
 					setParticleFromPars(p, pindex, type, pdef, px, py, pz,  Vx, Vy, Vz, anEvent);
@@ -630,13 +670,21 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 				double py     = thisParticleInfo.infos[8];
 				double pz     = thisParticleInfo.infos[9];
 
-				// vertex is already received in mm from beagle
-				// need to pass it in cm
-				double Vx     = (thisParticleInfo.infos[12]/cm) + svx/cm + rasterx/cm;
-				double Vy     = (thisParticleInfo.infos[13]/cm) + svy/cm + rastery/cm;
-				double Vz     = (thisParticleInfo.infos[14]/cm) + svz/cm;
 				double A      = thisParticleInfo.infos[15];
 				double Z      = thisParticleInfo.infos[16];
+
+				// vertex is already received in cm from LUND
+				// need to pass it in cm
+				double Vx     = thisParticleInfo.infos[12] + svx/cm + rasterx/cm + beamSpot_x/cm;
+				double Vy     = thisParticleInfo.infos[13] + svy/cm + rastery/cm + beamSpot_y/cm;
+				double Vz     = thisParticleInfo.infos[14] + svz/cm ;
+				if ( resetVertex || resetBeamSpot) {
+					Vx = rasterx /cm + beamSpot_x /cm;
+					Vy = rastery /cm + beamSpot_y /cm;
+				}
+				if ( resetVertex || resetBeamSpot) {
+					Vz = displaceZ /cm;
+				}
 
 				setParticleFromPars(p, pindex, type, pdef, px, py, pz,  Vx, Vy, Vz, anEvent, A, Z);
 			}
@@ -932,9 +980,6 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 	}
 
-
-
-
 	if(GEN_VERBOSITY > 5)
 		cout << " Generation done " << endl;
 }
@@ -975,12 +1020,65 @@ void MPrimaryGeneratorAction::setBeam()
 	rvdx = get_number(values[0]);
 	rvdy = get_number(values[1]);
 	resetVertex = false;
-
 	if(values.back().find("reset") != string::npos) {
 		resetVertex = true;
 	}
+	bool isNanVX = isnan(rvdx) && isnan(rvdy) ;
+	
+	if (isNanVX) {
+		cout << " Error: NAN detected for RASTER_VERTEX parameters " << endl;
+		cout << "rvdx: " << isnan(rvdx) << endl;
+		cout << "rvdy: " << isnan(rvdy) << endl;
+	}
+	
+	
 
+
+	// Getting beamspot vertex from option value
+	values = get_info(gemcOpt->optMap["BEAM_SPOT"].args);
+	
+	bssx = get_number(values[0]);
+	bssy = get_number(values[1]);
+	bsdx = get_number(values[2]);
+	bsdy = get_number(values[3]);
+	bsphi = get_number(values[4]);
+	resetBeamSpot = false;
+	if(values.back().find("reset") != string::npos) {
+		resetBeamSpot = true;
+	}
+
+	bool isNanBS = isnan(bssx) && isnan(bssy) && isnan(bsdx) && isnan(bsdy) && isnan(bsphi) ;
+	
+	if (isNanBS) {
+		cout << " Error: NAN detected for BEAM_SPOT parameters " << endl;
+		cout << "bssx: " << isnan(bssx) << endl;
+		cout << "bssy: " << isnan(bssy) << endl;
+		cout << "bsdx: " << isnan(bsdx) << endl;
+		cout << "bsdy: " << isnan(bsdy) << endl;
+		cout << "bsphi: " << isnan(bsphi) << endl;
+	}
+	
+	
+	// Getting vertex z displacement from option value
+	values = get_info(gemcOpt->optMap["RANDOMIZE_LUND_VZ"].args);
+	
+	displaceZs = get_number(values[0]);
+	displaceZd = get_number(values[1]);
+	displaceZvertex = false;
+	if(values.back().find("reset") != string::npos) {
+		displaceZvertex = true;
+	}
+	bool isNanVZD = isnan(displaceZs) && isnan(displaceZd) ;
+	
+	if (isNanVZD) {
+		cout << " Error: NAN detected for RANDOMIZE_LUND_VZ parameters " << endl;
+		cout << "displaceZs: " << isnan(displaceZs) << endl;
+		cout << "displaceZd: " << isnan(displaceZd) << endl;
+	}
+
+	
 	if(input_gen == "gemc_internal") {
+		
 		if(cosmics == "no") {
 			// Getting particle name,  momentum from option value
 			values       = get_info(gemcOpt->optMap["BEAM_P"].args, string(",\""));
@@ -1392,12 +1490,12 @@ void MPrimaryGeneratorAction::setParticleFromPars(int p, int pindex, int type, i
 
 		// beam polarization only along the beam
 		// only for the first particle
-		if(p==0)
-		{
+		if(p==0) {
 			particleGun->SetParticlePolarization(G4ThreeVector( 0, 0, beamPol ));
 		}
+		
 		if(GEN_VERBOSITY > 3)
-			cout << hd_msg << " Particle Number:  " << p+1 << ", id=" << pdef << " (" << Particle->GetParticleName() << ")"
+			cout << hd_msg << " Particle n. " << p+1 << ", id=" << pdef << " (" << Particle->GetParticleName() << ")"
 			<< "  Vertex=" << beam_vrt/cm << "cm,  momentum=" << pmom/GeV << " GeV" << endl;
 
 		// Primary particle generated int the middle of Time window

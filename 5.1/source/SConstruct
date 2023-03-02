@@ -2,12 +2,8 @@ from init_env import init_environment
 
 # adding ccdb as temporary dependency
 # will be removed once the hit process routines are plugins
-env = init_environment("qt5 geant4 clhep evio xercesc ccdb mlibrary cadmesh hipo c12bfields")
-
-# env.Replace(CXX = "/apps/gcc/4.7.2/bin/g++")
-# env.Replace(CXX = "/usr/bin/clang++")
-# env.Append(CXXFLAGS='-Wno-shorten-64-to-32')
-# env.Append(CXXFLAGS='-Wno-sign-conversion')
+env = init_environment("qt5 geant4 clhep xercesc ccdb mlibrary cadmesh hipo c12bfields")
+env.Append(CXXFLAGS=['-std=c++14'])
 
 # added because clhep is still behind clang (5/2015)
 if env['PLATFORM'] == 'darwin':
@@ -119,8 +115,9 @@ hitp_sources = Split("""
 	hitprocess/clas12/rtpc_hitprocess.cc
 	hitprocess/clas12/svt/bst_hitprocess.cc
 	hitprocess/clas12/svt/bst_strip.cc
-	hitprocess/clas12/alert/myatof_hitprocess.cc
+	hitprocess/clas12/alert/atof_hitprocess.cc
 	hitprocess/clas12/alert/ahdc_hitprocess.cc
+	hitprocess/clas12/alert/alertshell_hitprocess.cc
 	hitprocess/clas12/ctof_hitprocess.cc
 	hitprocess/clas12/cnd_hitprocess.cc
 	hitprocess/clas12/dc_hitprocess.cc
@@ -132,6 +129,8 @@ hitp_sources = Split("""
 	hitprocess/clas12/ltcc_hitprocess.cc
 	hitprocess/clas12/rich_hitprocess.cc
 	hitprocess/clas12/band_hitprocess.cc
+ 	hitprocess/clas12/uRwell/uRwell_hitprocess.cc
+ 	hitprocess/clas12/uRwell/uRwell_strip.cc
 	hitprocess/bdx/cormo_hitprocess.cc
 	hitprocess/bdx/veto_hitprocess.cc
 	hitprocess/bdx/crs_hitprocess.cc
@@ -151,7 +150,7 @@ env.Library(source = hitp_sources, target = "lib/ghitprocess")
 env.Append(CPPPATH = 'output')
 output_sources = Split("""
 	output/outputFactory.cc
-	output/evio_output.cc
+	
 	output/hipo_output.cc
 	output/hipoSchemas.cc
 	output/txt_output.cc
